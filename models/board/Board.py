@@ -14,6 +14,7 @@ class Board():
         self.setup_board()
 
     def setup_board(self):
+        self.board = [[Tile(row + 1, col + 1) for row in range(8)] for col in range(8)]
         # Pawns
         for i in range(8):
             self.board[1][i].set_piece(Pawn(1, i, Player.BLACK))
@@ -48,24 +49,25 @@ class Board():
         
         return self.board
 
-    def move_piece(self, start_row, start_col, end_row, end_col) -> bool:
+    def move_piece(self, start_row, start_col, end_row, end_col):
         start_tile = self.board[start_row][start_col]
         end_tile = self.board[end_row][end_col]
 
         if start_tile.is_empty():
-            print("No piece at the starting position")
+            return False, "No piece at the starting position"
         
         piece = start_tile.get_piece()
+        piece.valid_moves(self.board)
 
         if (end_row, end_col) not in piece.valid_moves(self.board):
-            print("Invalid move!")
-            return False
+            return False, "Invalid move!"
         
         #at this point, remove piece from start and replace end piece with start piece
         start_tile.remove_piece()
         end_tile.set_piece(piece)
+        piece.move_piece(end_row, end_col)
 
-        return True
+        return True, "Success"
 
 
     def print_board(self):

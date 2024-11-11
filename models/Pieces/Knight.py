@@ -1,13 +1,18 @@
 from models.Pieces.Piece import Piece
 from models.Enums.Player import Player
 from typing import List, Tuple
-
+from models.Enums.Player import Player
 
 class Knight(Piece):
     def __init__(self, row: int, col: int, player) -> None:
         self.row = row
         self.col = col
         self.player = player
+    
+    def move_piece(self, new_row, new_col) -> bool:
+        self.row = new_row
+        self.col = new_col
+        return True
 
     def valid_moves(self, board) -> List[Tuple[int, int]]:
         moves = set()
@@ -24,4 +29,4 @@ class Knight(Piece):
 
 
     def to_string(self) -> str:
-        return "N"
+        return f"{'w' if self.player == Player.WHITE else 'b'}n"

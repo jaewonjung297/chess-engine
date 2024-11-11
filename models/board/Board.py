@@ -48,7 +48,7 @@ class Board():
         
         return self.board
 
-    def move_piece(self, start_row, start_col, end_row, end_col):
+    def move_piece(self, start_row, start_col, end_row, end_col) -> bool:
         start_tile = self.board[start_row][start_col]
         end_tile = self.board[end_row][end_col]
 
@@ -59,12 +59,13 @@ class Board():
 
         if (end_row, end_col) not in piece.valid_moves(self.board):
             print("Invalid move!")
-            return
+            return False
         
         #at this point, remove piece from start and replace end piece with start piece
         start_tile.remove_piece()
         end_tile.set_piece(piece)
-        return
+
+        return True
 
 
     def print_board(self):

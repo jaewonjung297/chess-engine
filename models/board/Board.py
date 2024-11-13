@@ -49,7 +49,7 @@ class Board():
         
         return self.board
 
-    def move_piece(self, start_row, start_col, end_row, end_col):
+    def move_piece(self, current_player, start_row, start_col, end_row, end_col):
         start_tile = self.board[start_row][start_col]
         end_tile = self.board[end_row][end_col]
 
@@ -62,6 +62,13 @@ class Board():
         if (end_row, end_col) not in piece.valid_moves(self.board):
             return False, "Invalid move!"
         
+        opponent_king = self.find_king(current_player.opponent())
+        if type(piece) == Bishop:
+            start_tile.remove_piece()
+            end_tile.set_piece(piece)
+            piece.move_piece(end_row, end_col)
+            print(piece.can_attack_king(opponent_king, self.board))
+
         #at this point, remove piece from start and replace end piece with start piece
         start_tile.remove_piece()
         end_tile.set_piece(piece)
@@ -77,3 +84,11 @@ class Board():
                 [tile.get_piece().to_string() if not tile.is_empty() else "X" for tile in row]
             )
             print(row_string)
+
+    def find_king(self, player):
+        for row in self.board:
+            for tile in row:
+                if not tile.is_empty():
+                    piece = tile.get_piece()
+                    if type(piece) == King and piece.player == player:
+                        return piece

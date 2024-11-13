@@ -1,3 +1,5 @@
+from models.Pieces.King import King
+
 def evaluate_board(board):
     piece_values = {
         'wp': 1,
@@ -25,3 +27,12 @@ def evaluate_board(board):
                 score += piece_values[piece.to_string()]
 
     return score
+
+def find_king(player):
+    for row_index, row in enumerate(self.board):
+        for col_index, tile in enumerate(row):
+            if not tile.is_empty():
+                piece = tile.get_piece()
+                if type(piece) == King and piece.player == player:
+                    return (row_index, col_index)
+    return None

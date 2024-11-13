@@ -8,10 +8,12 @@ class Rook(Piece):
         self.row = row
         self.col = col
         self.player = player
+        self.moved_yet = False
 
     def move_piece(self, new_row, new_col) -> bool:
         self.row = new_row
         self.col = new_col
+        self.moved_yet |= True
         return True
 
     def valid_moves(self, board) -> List[Tuple[int, int]]:

@@ -9,6 +9,11 @@ class Tile():
     def to_string(self) -> str:
         return f"{self.file}{self.rank}"
 
+    def to_notation_string(self) -> str:
+        file = chr(96+self.file)
+        rank = 9 - self.rank
+        return f"{file}{rank}"
+        
     def is_empty(self) -> bool:
         return self.piece is None
 
@@ -18,5 +23,5 @@ class Tile():
     def set_piece(self, piece: Piece) -> None:
         self.piece = piece
 
-    def remove_piece(self) -> None:
+    def remove_piece(self) -> Piece:
         self.piece = None

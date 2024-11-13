@@ -8,8 +8,8 @@ class Bishop(Piece):
         self.row = row
         self.col = col
         self.player = player
-
-        self.player = player
+        self.is_targeting_king = False
+        
     def move_piece(self, new_row, new_col) -> bool:
         self.row = new_row
         self.col = new_col
@@ -25,17 +25,23 @@ class Bishop(Piece):
             while True:
                 new_row += x
                 new_col += y
-                if not 0 <= new_row < 8 or not 0 <= new_col < 8:
+
+                if not (0 <= new_row < 8 and 0 <= new_col < 8):
                     break
                 #not out of bounds. see if you can move 
                 if board[new_row][new_col].is_empty():
                     moves.add((new_row, new_col))
-                    continue
                 else:
                     if board[new_row][new_col].get_piece().player != self.player:
                         moves.add((new_row, new_col))
                     break
         return moves
+    
+    def can_attack_king(self, opponent_king, board):
+        if (opponent_king.row, opponent_king.col) in self.valid_moves(board):
+            return True
+        return False
+
 
 
     def to_string(self) -> str:

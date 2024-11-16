@@ -38,7 +38,7 @@ class King(Piece):
     def is_in_check(self, board):
         for row in board:
             for tile in row:
-                if not tile.is_empty() and tile.get_piece().player != self.player:
-                    if (self.row, self.col) in tile.get_piece().valid_moves(board):
+                if not tile.is_empty() and tile.get_piece().player != self.player and type(tile.get_piece()) != King:
+                    if tile.get_piece().can_attack_king(self, board):
                         return True
         return False

@@ -7,7 +7,7 @@ from helper import evaluate_board
 
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "http://localhost:5173"])
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "https://chess-ui-latest.onrender.com/"]}})
 socketio = SocketIO(app, cors_allowed_origins="*")
 current_turn = Player.WHITE
 
@@ -30,7 +30,7 @@ def get_board():
 @app.route('/api/make-move', methods=['OPTIONS', 'POST'])
 def make_move():
     if request.method == 'OPTIONS':
-        return '', 200  # Respond to preflight request
+        return '', 200
 
     move_data = request.get_json()
     global current_turn
@@ -45,17 +45,22 @@ def make_move():
     if piece is None or piece.player != current_turn:
         return jsonify({"success": False, "message": "Not your turn"})
 
-    success, message = board.move_piece(current_turn, start_row, start_col, end_row, end_col)
+    success, message = board.move_piece(current_turn, start_row, start_col, end_row, end_col)  # noqa: E501
+
     if success:
         current_turn = Player.BLACK if current_turn == Player.WHITE else Player.WHITE
+        if board.is_checkmate(current_turn):
+            winner =  "Black" if current_turn == Player.WHITE else "White"
+            socketio.emit('game_over', winner)
+            return jsonify({"message": "Game over"})
         board_data = [
-            [tile.get_piece().to_string() if not tile.is_empty() else 'X' for tile in row]
+            [tile.get_piece().to_string() if not tile.is_empty() else 'X' for tile in row]  # noqa: E501
             for row in board.board
         ]
         socketio.emit('board_update', board_data)
 
     
-    return jsonify({"message": message, "piece": piece.to_string(), "new-position": board.board[end_row][end_col].to_notation_string()})
+    return jsonify({"message": message, "piece": piece.to_string(), "new-position": board.board[end_row][end_col].to_notation_string()})  # noqa: E501
 
 @app.route('/api/reset-game', methods=['OPTIONS', 'POST'])
 def reset_game():
@@ -73,6 +78,19 @@ def reset_game():
 def evaluate():
     score = evaluate_board(board.board)
     return jsonify({"success": "success", "score": score})
+
+@app.route('/api/valid-moves', methods=['OPTIONS','POST'])
+def valid_moves():
+    if request.method == 'OPTIONS':
+        return '', 200
+    data = request.get_json()
+    position = data['position']
+    piece = board.board[position['row']][position['col']].get_piece()
+    valid_moves = piece.valid_moves(board.board)
+    valid_moves_string = "[" + ", ".join([f"({row}, {col})" for row, col in valid_moves]) + "]"
+    return jsonify({"success": True, "valid_moves": valid_moves_string})
+
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5001, debug=True, allow_unsafe_werkzeug=True)

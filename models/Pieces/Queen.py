@@ -35,6 +35,10 @@ class Queen(Piece):
                     break
         return moves
 
+    def can_attack_king(self, opponent_king, board):
+        if (opponent_king.row, opponent_king.col) in self.valid_moves(board):
+            return True
+        return False
 
     def to_string(self) -> str:
         return f"{'w' if self.player == Player.WHITE else 'b'}q"

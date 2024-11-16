@@ -61,25 +61,37 @@ class Board():
 
         if (end_row, end_col) not in piece.valid_moves(self.board):
             return False, "Invalid move!"
-        
-        opponent_king = self.find_king(current_player.opponent())
-        if type(piece) == Bishop:
+
+        #simulate move. if your king is still in check, then you can't make that move.
+        current_king = self.find_king(current_player)
+        if current_king.is_in_check(self.board):
+            #store the current state
+            start_piece = start_tile.get_piece()
+            end_piece = end_tile.get_piece()
+            #move pieces
             start_tile.remove_piece()
             end_tile.set_piece(piece)
             piece.move_piece(end_row, end_col)
-            print(piece.can_attack_king(opponent_king, self.board))
-
+            #if king still in check, invalid move
+            if current_king.is_in_check(self.board):
+                start_tile.set_piece(start_piece)
+                end_tile.set_piece(end_piece)
+                piece.move_piece(start_row, start_col)
+                print("still in check")
+                return False, "King is in check"
+            else:
+                return True, "Success"
         #at this point, remove piece from start and replace end piece with start piece
         start_tile.remove_piece()
         end_tile.set_piece(piece)
         piece.move_piece(end_row, end_col)
+        opponent = Player.BLACK if current_player == Player.WHITE else Player.WHITE
 
         return True, "Success"
 
 
     def print_board(self):
         for row in self.board:
-            # Use a list comprehension with a conditional expression
             row_string = ' '.join(
                 [tile.get_piece().to_string() if not tile.is_empty() else "X" for tile in row]
             )
@@ -92,3 +104,40 @@ class Board():
                     piece = tile.get_piece()
                     if type(piece) == King and piece.player == player:
                         return piece
+
+    def is_checkmate(self, current_player):
+        king = self.find_king(current_player)
+
+        if not king.is_in_check(self.board):
+            return False
+
+        player_pieces = []
+        for row in self.board:
+            for tile in row:
+                if not tile.is_empty() and tile.get_piece().player == current_player:
+                    player_pieces.append(tile.get_piece())
+
+        for piece in player_pieces:
+            valid_moves = piece.valid_moves(self.board)
+
+            for move in valid_moves:
+                start_row, start_col = piece.row, piece.col
+                end_row, end_col = move
+
+                original_target_piece = self.board[end_row][end_col].get_piece()
+                self.board[end_row][end_col].set_piece(piece)
+                self.board[start_row][start_col].remove_piece()
+                piece.move_piece(end_row, end_col)
+
+                if not king.is_in_check(self.board):
+                    piece.move_piece(start_row, start_col)
+                    self.board[start_row][start_col].set_piece(piece)
+                    self.board[end_row][end_col].set_piece(original_target_piece)
+                    print(f"this must have triggered. start: f{start_row, start_col}, end: f{end_row, end_col}")
+                    return False
+
+                piece.move_piece(start_row, start_col)
+                self.board[start_row][start_col].set_piece(piece)
+                self.board[end_row][end_col].set_piece(original_target_piece)
+
+        return True

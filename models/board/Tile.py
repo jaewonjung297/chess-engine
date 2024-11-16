@@ -22,6 +22,9 @@ class Tile():
     
     def set_piece(self, piece: Piece) -> None:
         self.piece = piece
+        return self.piece
 
     def remove_piece(self) -> Piece:
+        piece = self.piece
         self.piece = None
+        return piece
